@@ -9,7 +9,6 @@ from sensor import Sensor
 
 
 def generate_table(sensors: list[Sensor]) -> Table:
-    """Creates a fresh table with current sensor data."""
     table = Table(title="IoT Sensor Network Status", box=box.ROUNDED)
 
     table.add_column("Sensor Name", style="cyan", no_wrap=True)
