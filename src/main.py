@@ -38,16 +38,6 @@ def main():
 
     logger.info("Started %d sensors", len(sensors))
 
-    # try:
-    #     run_dashboard(sensors)
-    # except KeyboardInterrupt:
-    #     pass
-    # finally:
-    #     logger.info("\nStopping all sensors...")
-    #     for sensor in sensors:
-    #         sensor.stop()
-    #     logger.info("Stopped")
-
     try:
         while True:
             pass
