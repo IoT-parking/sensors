@@ -1,14 +1,21 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from logging import Logger
-from threading import Thread, Event
+from threading import Event, Thread
+from typing import TYPE_CHECKING
+
+import paho.mqtt.client as mqtt
+
 from constants import (
     MAIN_TOPIC,
     MQTT_BROKER_HOST,
     MQTT_BROKER_PORT,
     SECONDS_IN_A_MINUTE,
 )
-import paho.mqtt.client as mqtt
 from logger import get_logger
+
+if TYPE_CHECKING:
+    from logging import Logger
 
 logger: Logger = get_logger()
 
@@ -17,24 +24,21 @@ class Sensor(ABC):
     def __init__(
         self,
         name: str,
-        type: str,
+        device_type: str,
         value_range: tuple[float, float] | tuple[int, int],
         messages_per_min: int,
-        mqtt_host: str | None = MQTT_BROKER_HOST,
-        mqtt_port: str | None = MQTT_BROKER_PORT,
     ) -> None:
-        if mqtt_host is None or mqtt_port is None:
-            raise ValueError(
-                "MQTT host and port must be provided as environment variables."
-            )
+        if MQTT_BROKER_HOST is None or MQTT_BROKER_PORT is None:
+            msg = "MQTT host and port must be provided as environment variables."
+            raise ValueError(msg)
 
         self.name: str = name
-        self.type: str = type
+        self.device_type: str = device_type
 
         self._interval: float = SECONDS_IN_A_MINUTE / messages_per_min
         self._value_range: tuple[float, float] | tuple[int, int] = value_range
 
-        self.topic: str = f"{MAIN_TOPIC}/{self.type}/{self.name}"
+        self.topic: str = f"{MAIN_TOPIC}/{self.device_type}/{self.name}"
         self._thread_name: str = f"{self.name}_thread"
 
         self._stop_event: Event = Event()
@@ -49,8 +53,8 @@ class Sensor(ABC):
         )
 
         self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        self._mqtt_host: str = str(mqtt_host)
-        self._mqtt_port: int = int(mqtt_port)
+        self._mqtt_host: str = str(MQTT_BROKER_HOST)
+        self._mqtt_port: int = int(MQTT_BROKER_PORT)
 
     @abstractmethod
     def _generate_value(self) -> float | int:
@@ -69,7 +73,7 @@ class Sensor(ABC):
             name=self._thread_name,
             daemon=True,
         )
-        
+
         self._thread.start()
         logger.info("Sensor started.")
 
@@ -97,7 +101,9 @@ class Sensor(ABC):
 
     def _simulation_loop(self) -> None:
         try:
-            logger.debug("Connecting to MQTT broker at %s:%s", self._mqtt_host, self._mqtt_port)
+            logger.debug(
+                "Connecting to MQTT broker at %s:%s", self._mqtt_host, self._mqtt_port
+            )
             self._client.connect(self._mqtt_host, self._mqtt_port, 60)
             self._client.loop_start()
             logger.info("Connected to MQTT and started simulation.")

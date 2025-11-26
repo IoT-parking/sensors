@@ -1,28 +1,15 @@
-import time
-from sensor import EnergyConsumptionSensor
+from typing import TYPE_CHECKING
+
+from utils import generate_sensor_devices, start_all_sensors_simulation
+
+if TYPE_CHECKING:
+    from sensor import Sensor
 
 
 def main():
-    sensor = EnergyConsumptionSensor(name="energy_sensor_1")
+    all_sensors: list[Sensor] = generate_sensor_devices()
 
-    sensor.start()
-    
-    time.sleep(40)
-    
-    # Pause
-    sensor.pause()
-    time.sleep(3)
-    
-    # Resume
-    sensor.resume()
-    time.sleep(5)
-    
-    # Stop
-    sensor.stop()
-
-    sensor.start()
-
-
+    start_all_sensors_simulation(all_sensors)
 
 
 if __name__ == "__main__":

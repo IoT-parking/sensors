@@ -1,13 +1,15 @@
+from .sensor import Sensor
 from .sensor_models import (
-    OccupancySensor,
     CarbonMonoxideSensor,
-    TemperatureSensor,
     EnergyConsumptionSensor,
+    OccupancySensor,
+    TemperatureSensor,
 )
 
 __all__ = [
-    "OccupancySensor",
     "CarbonMonoxideSensor",
-    "TemperatureSensor",
     "EnergyConsumptionSensor",
+    "OccupancySensor",
+    "Sensor",
+    "TemperatureSensor",
 ]

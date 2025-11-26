@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import datetime
 import logging
-from pathlib import Path
-from dotenv import load_dotenv
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 ROOT_PROJECT_PATH: Path = Path(__file__).parent.parent
 
@@ -12,7 +15,7 @@ LOGGER_DEFAULT_LEVEL: int = logging.DEBUG
 
 LOGS_DIRPATH: Path = ROOT_PROJECT_PATH / "logs"
 
-DEFAULT_TIMEZONE: datetime.tzinfo = datetime.UTC 
+DEFAULT_TIMEZONE: datetime.tzinfo = datetime.UTC
 
 
 load_dotenv(ROOT_PROJECT_PATH / ".env")

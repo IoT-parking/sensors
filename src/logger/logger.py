@@ -1,8 +1,16 @@
-from datetime import datetime
 import logging
-from pathlib import Path
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from constants import DEFAULT_TIMEZONE, GLOBAL_LOGGER_NAME, LOGGER_DEFAULT_LEVEL, LOGS_DIRPATH
+from constants import (
+    DEFAULT_TIMEZONE,
+    GLOBAL_LOGGER_NAME,
+    LOGGER_DEFAULT_LEVEL,
+    LOGS_DIRPATH,
+)
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def get_logger(name: str = GLOBAL_LOGGER_NAME) -> logging.Logger:
