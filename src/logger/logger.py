@@ -14,16 +14,6 @@ if TYPE_CHECKING:
 
 
 def get_logger(name: str = GLOBAL_LOGGER_NAME) -> logging.Logger:
-    """
-    Creates and configures a logger instance.
-
-    Args:
-        name (str): Name of the logger. Defaults to `GLOBAL_LOGGER_NAME`.
-
-    Returns:
-        logging.Logger: Configured logger instance.
-
-    """
     logger = logging.getLogger(name)
     if not logger.hasHandlers():
         timestamp: str = datetime.now(tz=DEFAULT_TIMEZONE).strftime(
@@ -32,8 +22,8 @@ def get_logger(name: str = GLOBAL_LOGGER_NAME) -> logging.Logger:
 
         log_handlers: list[logging.Handler] = []
 
-        stream_handler: logging.Handler = logging.StreamHandler()
-        log_handlers.append(stream_handler)
+        # stream_handler: logging.Handler = logging.StreamHandler()
+        # log_handlers.append(stream_handler)
 
         log_filepath: Path = LOGS_DIRPATH / f"{timestamp}.log"
         LOGS_DIRPATH.mkdir(parents=True, exist_ok=True)
