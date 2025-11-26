@@ -62,20 +62,51 @@ For development dependencies:
 uv add --dev <package-name>
 ```
 
-### 6. Running
+## Running
 
-Choose one of the following methods:
+### 1. Mock mode
 
-**In the docker container:**
+If you wish to test out the measurment generation logic locally - use the `mock mode` through:
+
 ```bash
-
+uv run src/main.py --mock
 ```
 
-**Local launch**
+This method does not require MQTT connection.
+
+### 2. As a part of [`iot-parking`](https://github.com/IoT-parking/iot-parking)
+
+Run docker-compose and attach to the container:
+
 ```bash
-uv run src/main.py
+// iot-parking
+docker compose up --build -d 
+docker attach sensors
 ```
 
+and then using the internal CLI, run the sensor simulation:
+
+```bash
+iot-parking> start
+```
+
+### Internal CLI
+
+App provides internal CLI as stated in requirements:
+
+```
+--- IoT-parking Sensor Simulation ---
+MQTT Broker Hostname: mosquitto:1883
+Number of sensor instances per type: 4
+-------------------------------------
+Available Commands:
+  start       - Start the sensor simulation (Blocking)
+  healthcheck - Check connectivity to MQTT Broker
+  help        - Show this menu
+  exit        - Quit the application
+  
+iot-parking> 
+```
 
 
 
