@@ -1,7 +1,7 @@
 [project]
 name = "sensors"
 version = "0.1.0"
-description = "Add your description here"
+description = "Simulating iot-parking sensors behavior through mqtt."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
