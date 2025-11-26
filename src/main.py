@@ -7,7 +7,7 @@ def main():
 
     sensor.start()
     
-    time.sleep(5)
+    time.sleep(40)
     
     # Pause
     sensor.pause()

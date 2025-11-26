@@ -34,7 +34,7 @@ def get_logger(name: str = GLOBAL_LOGGER_NAME) -> logging.Logger:
         log_handlers.append(file_handler)
 
         formatter = logging.Formatter(
-            "%(asctime)-19s | %(threadName)-15s | %(message)s",
+            "%(asctime)-19s | %(threadName)-25s | %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
 

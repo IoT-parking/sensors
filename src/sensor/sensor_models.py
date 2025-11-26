@@ -1,4 +1,6 @@
 from .sensor import Sensor
+from utils import calculate_measurement
+import random
 from constants import (
     OCCUPANCY_SENSOR_TYPE,
     OCCUPANCY_VALUES,
@@ -25,7 +27,8 @@ class OccupancySensor(Sensor):
         )
 
     def _generate_value(self) -> int:
-        pass
+        min_value, max_value = self._value_range
+        return random.randint(min_value, max_value)
 
 
 class CarbonMonoxideSensor(Sensor):
@@ -37,8 +40,12 @@ class CarbonMonoxideSensor(Sensor):
             messages_per_min=CO_MESSAGES_PER_MIN,
         )
 
-    def _generate_value(self) -> int:
-        return 2
+    def _generate_value(self) -> float:
+        min_value, max_value = self._value_range
+        return calculate_measurement(
+            min_value=min_value,
+            max_value=max_value
+        )
 
 
 class TemperatureSensor(Sensor):
@@ -50,8 +57,12 @@ class TemperatureSensor(Sensor):
             messages_per_min=TEMPERATURE_MESSAGES_PER_MIN,
         )
 
-    def _generate_value(self) -> int:
-        pass
+    def _generate_value(self) -> float:
+        min_value, max_value = self._value_range
+        return calculate_measurement(
+            min_value=min_value,
+            max_value=max_value
+        )
 
 
 class EnergyConsumptionSensor(Sensor):
@@ -63,5 +74,9 @@ class EnergyConsumptionSensor(Sensor):
             messages_per_min=ENERGY_MESSAGES_PER_MIN,
         )
 
-    def _generate_value(self) -> int:
-        return 2
+    def _generate_value(self) -> float:
+        min_value, max_value = self._value_range
+        return calculate_measurement(
+            min_value=min_value,
+            max_value=max_value
+        )
