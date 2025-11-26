@@ -1,52 +1,46 @@
+import argparse
 import sys
 from logging import Logger
 
-from constants import MQTT_BROKER_HOST, MQTT_BROKER_PORT
 from logger import get_logger
-from utils.setup import (
-    generate_sensor_devices,
-    is_broker_available,
-    start_all_sensors_simulation,
+from utils.cli import (
+    cli_info_handler,
+    perform_healthcheck,
+    start_simulation,
 )
 
 logger: Logger = get_logger()
 
 
-def main():
-    logger.info("Initializing Sensors...")
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mock", action="store_true", help="Enable mock mode")
+    args = parser.parse_args()
 
-    if not is_broker_available(MQTT_BROKER_HOST, int(MQTT_BROKER_PORT)):
-        logger.critical(
-            "Critical Error: Unable to reach MQTT Broker at %s:%s.",
-            MQTT_BROKER_HOST,
-            MQTT_BROKER_PORT,
-        )
-        logger.info("Please check if your Docker container 'mosquitto' is running")
-        sys.exit(1)
+    cli_info_handler()
+    if args.mock:
+        print("NOTE: Application running in MOCK MODE")
 
-    sensors = generate_sensor_devices()
+    while True:
+        try:
+            command = input("iot-parking> ").strip().lower()
 
-    if not sensors:
-        logger.error("No sensors generated. Check INSTANCES_PER_DEVICE_TYPE")
-        sys.exit(1)
+            if command == "start":
+                start_simulation(args.mock)
+            elif command == "healthcheck":
+                perform_healthcheck()
+            elif command == "help":
+                cli_info_handler()
+            elif command == "exit":
+                logger.info("Exiting application.")
+                sys.exit(0)
+            elif command == "":
+                continue
+            else:
+                print(f"Unknown command: '{command}'. Type 'help' for options.")
 
-    try:
-        start_all_sensors_simulation(sensors)
-    except Exception:
-        logger.exception("Failed to start sensor simulations")
-        sys.exit(1)
-
-    logger.info("Started %d sensors", len(sensors))
-
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        logger.info("\nStopping all sensors...")
-        for sensor in sensors:
-            sensor.stop()
-        logger.info("Stopped")
-
+        except KeyboardInterrupt:
+            print("\nUse 'exit' to quit.")
 
 if __name__ == "__main__":
     main()

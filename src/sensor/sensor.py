@@ -29,7 +29,7 @@ class Sensor(ABC):
         messages_per_min: int,
     ) -> None:
         if MQTT_BROKER_HOST is None or MQTT_BROKER_PORT is None:
-            msg = "MQTT host and port must be provided as environment variables."
+            msg = "MQTT_BROKER_HOST and MQTT_BROKER_PORT must be set as environment variables"
             raise ValueError(msg)
 
         self.name: str = name
