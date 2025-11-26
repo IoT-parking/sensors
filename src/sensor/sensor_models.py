@@ -16,7 +16,7 @@ from constants import (
     TEMPERATURE_SENSOR_TYPE,
     TEMPERATURE_VALUES_RANGE,
 )
-from utils import calculate_measurement
+from utils.measurement import calculate_measurement
 
 from .sensor import Sensor
 

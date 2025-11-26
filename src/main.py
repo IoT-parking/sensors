@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from utils import generate_sensor_devices, start_all_sensors_simulation
+from utils.setup import generate_sensor_devices, start_all_sensors_simulation
 
 if TYPE_CHECKING:
     from sensor import Sensor
@@ -8,8 +8,9 @@ if TYPE_CHECKING:
 
 def main():
     all_sensors: list[Sensor] = generate_sensor_devices()
-
     start_all_sensors_simulation(all_sensors)
+
+
 
 
 if __name__ == "__main__":
