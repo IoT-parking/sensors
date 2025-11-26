@@ -1,5 +1,9 @@
+from sensor import CarbonMonoxideSensor
+
+
 def main():
-    print("Hello from sensors!")
+    sensor = CarbonMonoxideSensor(name="co_sensor_1")
+    print(sensor.topic)
 
 
 if __name__ == "__main__":
