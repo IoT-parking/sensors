@@ -69,7 +69,7 @@ class Sensor(ABC):
     def _generate_value(self) -> float | int:
         raise NotImplementedError
 
-    def start(self) -> None:
+    def start(self, *, mock_mode: bool = False) -> None:
         if self._thread.is_alive():
             logger.warning("Sensor is already running.")
             return
@@ -78,8 +78,12 @@ class Sensor(ABC):
         self._stop_event.clear()
         self._pause_event.set()
 
+        target_method = (
+            self._mock_local_simulation if mock_mode else self._simulation_loop
+        )
+
         self._thread = Thread(
-            target=self._simulation_loop,
+            target=target_method,
             name=self._thread_name,
             daemon=True,
         )

@@ -26,9 +26,9 @@ def main() -> None:
             command = input("iot-parking> ").strip().lower()
 
             if command == "start":
-                start_simulation(args.mock)
+                start_simulation(mock_mode=args.mock)
             elif command == "healthcheck":
-                perform_healthcheck()
+                perform_healthcheck(mock_mode=args.mock)
             elif command == "help":
                 cli_info_handler()
             elif command == "exit":
@@ -41,6 +41,7 @@ def main() -> None:
 
         except KeyboardInterrupt:
             print("\nUse 'exit' to quit.")
+
 
 if __name__ == "__main__":
     main()

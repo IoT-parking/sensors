@@ -10,6 +10,7 @@ from utils.setup import (
 
 logger: Logger = get_logger()
 
+
 def cli_info_handler() -> None:
     print("\n--- IoT-parking Sensor Simulation ---")
     print(f"MQTT Broker Hostname: {MQTT_BROKER_HOST}:{MQTT_BROKER_PORT}")
@@ -22,25 +23,41 @@ def cli_info_handler() -> None:
     print("  exit        - Quit the application")
     print(" ")
 
-def perform_healthcheck() -> bool:
+
+def perform_healthcheck(*, mock_mode: bool) -> bool:
     logger.info("Performing healthcheck...")
+    if mock_mode:
+        logger.warning("Mock mode enabled: Skipping healthcheck.")
+        return True
+
     if MQTT_BROKER_HOST is None or MQTT_BROKER_PORT is None:
-        msg = "MQTT_BROKER_HOST and MQTT_BROKER_PORT must be set as environment variables"
+        msg = (
+            "MQTT_BROKER_HOST and MQTT_BROKER_PORT must be set as environment variables"
+        )
         raise ValueError(msg)
 
     if is_broker_available(MQTT_BROKER_HOST, int(MQTT_BROKER_PORT)):
-        logger.info("Healthcheck PASSED: MQTT Broker is reachable at %s:%s", MQTT_BROKER_HOST, MQTT_BROKER_PORT)
+        logger.info(
+            "Healthcheck PASSED: MQTT Broker is reachable at %s:%s",
+            MQTT_BROKER_HOST,
+            MQTT_BROKER_PORT,
+        )
         return True
-    else:
-        logger.error("Healthcheck FAILED: Unable to reach MQTT Broker at %s:%s", MQTT_BROKER_HOST, MQTT_BROKER_PORT)
-        return False
 
-def start_simulation(mock_mode: bool) -> None:
+    logger.error(
+        "Healthcheck FAILED: Unable to reach MQTT Broker at %s:%s",
+        MQTT_BROKER_HOST,
+        MQTT_BROKER_PORT,
+    )
+    return False
+
+
+def start_simulation(*, mock_mode: bool) -> None:
     logger.info("Initializing Sensors...")
 
     if mock_mode:
         logger.warning("Mock mode enabled: Skipping healthcheck.")
-    elif not perform_healthcheck():
+    elif not perform_healthcheck(mock_mode=mock_mode):
         logger.info("Please check if your Docker container 'mosquitto' is running")
         return
 
@@ -51,7 +68,7 @@ def start_simulation(mock_mode: bool) -> None:
         return
 
     try:
-        start_all_sensors_simulation(sensors)
+        start_all_sensors_simulation(sensors, mock_mode=mock_mode)
     except Exception:
         logger.exception("Failed to start sensor simulations")
         return
