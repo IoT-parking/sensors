@@ -3,7 +3,6 @@ from logging import Logger
 
 from constants import MQTT_BROKER_HOST, MQTT_BROKER_PORT
 from logger import get_logger
-from utils.dashboard import run_dashboard
 from utils.setup import (
     generate_sensor_devices,
     is_broker_available,
