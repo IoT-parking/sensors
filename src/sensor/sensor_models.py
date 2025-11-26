@@ -17,31 +17,51 @@ from constants import (
 
 class OccupancySensor(Sensor):
     def __init__(self, name: str) -> None:
-        super().__init__(name=name, type=OCCUPANCY_SENSOR_TYPE, value_range=OCCUPANCY_VALUES, messages_per_min=OCCUPANCY_MESSAGES_PER_MIN)
+        super().__init__(
+            name=name,
+            type=OCCUPANCY_SENSOR_TYPE,
+            value_range=OCCUPANCY_VALUES,
+            messages_per_min=OCCUPANCY_MESSAGES_PER_MIN,
+        )
 
-    def generate_value(self) -> int:
+    def _generate_value(self) -> int:
         pass
 
 
 class CarbonMonoxideSensor(Sensor):
     def __init__(self, name: str) -> None:
-        super().__init__(name=name, type=CO_SENSOR_TYPE, value_range=CO_VALUES_RANGE, messages_per_min=CO_MESSAGES_PER_MIN)
+        super().__init__(
+            name=name,
+            type=CO_SENSOR_TYPE,
+            value_range=CO_VALUES_RANGE,
+            messages_per_min=CO_MESSAGES_PER_MIN,
+        )
 
-    def generate_value(self) -> int:
-        pass
+    def _generate_value(self) -> int:
+        return 2
 
 
 class TemperatureSensor(Sensor):
     def __init__(self, name: str) -> None:
-        super().__init__(name=name, type=TEMPERATURE_SENSOR_TYPE, value_range=TEMPERATURE_VALUES_RANGE, messages_per_min=TEMPERATURE_MESSAGES_PER_MIN)
+        super().__init__(
+            name=name,
+            type=TEMPERATURE_SENSOR_TYPE,
+            value_range=TEMPERATURE_VALUES_RANGE,
+            messages_per_min=TEMPERATURE_MESSAGES_PER_MIN,
+        )
 
-    def generate_value(self) -> int:
+    def _generate_value(self) -> int:
         pass
 
 
 class EnergyConsumptionSensor(Sensor):
     def __init__(self, name: str) -> None:
-        super().__init__(name=name, type=ENERGY_SENSOR_TYPE, value_range=ENERGY_VALUES_RANGE, messages_per_min=ENERGY_MESSAGES_PER_MIN)
+        super().__init__(
+            name=name,
+            type=ENERGY_SENSOR_TYPE,
+            value_range=ENERGY_VALUES_RANGE,
+            messages_per_min=ENERGY_MESSAGES_PER_MIN,
+        )
 
-    def generate_value(self) -> int:
-        pass
+    def _generate_value(self) -> int:
+        return 2

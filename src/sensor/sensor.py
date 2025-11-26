@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from logging import Logger
 from threading import Thread, Event
 from constants import (
     MAIN_TOPIC,
@@ -7,6 +8,9 @@ from constants import (
     SECONDS_IN_A_MINUTE,
 )
 import paho.mqtt.client as mqtt
+from logger import get_logger
+
+logger: Logger = get_logger()
 
 
 class Sensor(ABC):
@@ -32,13 +36,13 @@ class Sensor(ABC):
 
         self.topic: str = f"{MAIN_TOPIC}/{self.type}/{self.name}"
 
-        self._stop_event = Event()
-        self._pause_event = Event()
+        self._stop_event: Event = Event()
+        self._pause_event: Event = Event()
 
         self._pause_event.set()
 
         self.thread: Thread = Thread(
-            target=self._simulation_loop,
+            target=self._mock_local_simulation,
             name=f"{self.type}_{self.name}_thread",
             daemon=True,
         )
@@ -52,34 +56,46 @@ class Sensor(ABC):
         raise NotImplementedError
 
     def start(self) -> None:
-        if not self.thread.is_alive():
-            print(f"[{self.name}] Starting...")
-            self.thread.start()
+        if self.thread.is_alive():
+            logger.warning(f"[{self.name}] Sensor is already running.")
+            return
+
+        self._stop_event.clear()
+        self._pause_event.set()
+
+        self.thread = Thread(
+            target=self._mock_local_simulation,
+            name=f"{self.type}_{self.name}_thread",
+            daemon=True,
+        )
+        
+        self.thread.start()
+        logger.info(f"[{self.name}] Sensor started.")
 
     def stop(self) -> None:
         self._stop_event.set()
 
         self._pause_event.set()
         if self.thread.is_alive():
-            print(f"[{self.name}] Stopping...")
+            logger.info(f"[{self.name}] Stopping...")
             self.thread.join(timeout=1.0)
 
             self.client.loop_stop()
             self.client.disconnect()
 
     def pause(self) -> None:
-        print(f"[{self.name}] Pausing...")
+        logger.info(f"[{self.name}] Pausing...")
         self._pause_event.clear()
 
     def resume(self) -> None:
-        print(f"[{self.name}] Resuming...")
+        logger.info(f"[{self.name}] Resuming...")
         self._pause_event.set()
 
     def _simulation_loop(self) -> None:
         try:
             self.client.connect(self.mqtt_host, self.mqtt_port, 60)
             self.client.loop_start()
-            print(f"[{self.name}] Connected to MQTT and started simulation.")
+            logger.info(f"[{self.name}] Connected to MQTT and started simulation.")
 
             while not self._stop_event.is_set():
                 is_resumed = self._pause_event.wait(timeout=1.0)
@@ -88,11 +104,27 @@ class Sensor(ABC):
                     continue
 
                 value = self._generate_value()
-                print(f"[{self.name}] Publishing value: {value} to topic: {self.topic}")
+                logger.info(f"[{self.name}] Publishing value: {value} to topic: {self.topic}")
 
                 self.client.publish(self.topic, value)
 
                 self._stop_event.wait(self.interval)
 
         except Exception as e:
-            print(f"[{self.name}] Error in simulation loop: {e}")
+            logger.info(f"[{self.name}] Error in simulation loop: {e}")
+
+    def _mock_local_simulation(self) -> None:
+        try:
+            while not self._stop_event.is_set():
+                is_resumed = self._pause_event.wait(timeout=1.0)
+
+                if not is_resumed:
+                    continue
+
+                value = self._generate_value()
+                logger.info(f"[{self.name}] Generated value: {value}")
+
+                self._stop_event.wait(self.interval)
+
+        except Exception as e:
+            logger.info(f"[{self.name}] Error in simulation loop: {e}")
