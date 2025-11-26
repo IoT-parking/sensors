@@ -1,4 +1,8 @@
+import socket
+from logging import Logger
+
 from constants import INSTANCES_PER_DEVICE_TYPE
+from logger import get_logger
 from sensor import (
     CarbonMonoxideSensor,
     EnergyConsumptionSensor,
@@ -6,6 +10,8 @@ from sensor import (
     Sensor,
     TemperatureSensor,
 )
+
+logger: Logger = get_logger()
 
 
 def generate_sensor_devices() -> list[Sensor]:
@@ -30,3 +36,11 @@ def generate_sensor_devices() -> list[Sensor]:
 def start_all_sensors_simulation(sensors: list[Sensor]) -> None:
     for sensor in sensors:
         sensor.start()
+
+
+def is_broker_available(host: str, port: int, timeout: int = 3) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return False

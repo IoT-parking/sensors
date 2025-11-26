@@ -48,7 +48,7 @@ class Sensor(ABC):
         self._pause_event.set()
 
         self._thread: Thread = Thread(
-            target=self._mock_local_simulation,
+            target=self._simulation_loop,
             name=self._thread_name,
             daemon=True,
         )
@@ -79,7 +79,7 @@ class Sensor(ABC):
         self._pause_event.set()
 
         self._thread = Thread(
-            target=self._mock_local_simulation,
+            target=self._simulation_loop,
             name=self._thread_name,
             daemon=True,
         )
@@ -119,7 +119,8 @@ class Sensor(ABC):
             logger.info("Connected to MQTT and started simulation.")
         except Exception as e:
             logger.warning("Could not connect to MQTT broker: %s", e)
-            raise
+            self._stop_event.set()
+            return
 
         while not self._stop_event.is_set():
             try:
@@ -141,19 +142,19 @@ class Sensor(ABC):
                 logger.debug("Published value: %s to topic: %s", value, self.topic)
 
     def _mock_local_simulation(self) -> None:
-            while not self._stop_event.is_set():
-                try:
-                    is_resumed = self._pause_event.wait(timeout=1.0)
+        while not self._stop_event.is_set():
+            try:
+                is_resumed = self._pause_event.wait(timeout=1.0)
 
-                    if not is_resumed:
-                        continue
+                if not is_resumed:
+                    continue
 
-                    value = self._generate_value()
-                    logger.debug("Generated value %s", value)
+                value = self._generate_value()
+                logger.debug("Generated value %s", value)
 
-                    self._stop_event.wait(self._interval)
-                except Exception as e:
-                    logger.warning("Error occured in simulation loop: %s", e)
-                else:
-                    self.messages_sent += 1
-                    logger.debug("Generated value: %s", value)
+                self._stop_event.wait(self._interval)
+            except Exception as e:
+                logger.warning("Error occured in simulation loop: %s", e)
+            else:
+                self.messages_sent += 1
+                logger.debug("Generated value: %s", value)

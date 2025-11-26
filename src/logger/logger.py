@@ -22,8 +22,8 @@ def get_logger(name: str = GLOBAL_LOGGER_NAME) -> logging.Logger:
 
         log_handlers: list[logging.Handler] = []
 
-        # stream_handler: logging.Handler = logging.StreamHandler()
-        # log_handlers.append(stream_handler)
+        stream_handler: logging.Handler = logging.StreamHandler()
+        log_handlers.append(stream_handler)
 
         log_filepath: Path = LOGS_DIRPATH / f"{timestamp}.log"
         LOGS_DIRPATH.mkdir(parents=True, exist_ok=True)
