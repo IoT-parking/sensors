@@ -31,87 +31,93 @@ class Sensor(ABC):
         self.name: str = name
         self.type: str = type
 
-        self.interval: float = SECONDS_IN_A_MINUTE / messages_per_min
-        self.value_range: tuple[float, float] | tuple[int, int] = value_range
+        self._interval: float = SECONDS_IN_A_MINUTE / messages_per_min
+        self._value_range: tuple[float, float] | tuple[int, int] = value_range
 
         self.topic: str = f"{MAIN_TOPIC}/{self.type}/{self.name}"
+        self._thread_name: str = f"{self.name}_thread"
 
         self._stop_event: Event = Event()
         self._pause_event: Event = Event()
 
         self._pause_event.set()
 
-        self.thread: Thread = Thread(
+        self._thread: Thread = Thread(
             target=self._mock_local_simulation,
-            name=f"{self.type}_{self.name}_thread",
+            name=self._thread_name,
             daemon=True,
         )
 
-        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        self.mqtt_host: str = str(mqtt_host)
-        self.mqtt_port: int = int(mqtt_port)
+        self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        self._mqtt_host: str = str(mqtt_host)
+        self._mqtt_port: int = int(mqtt_port)
 
     @abstractmethod
     def _generate_value(self) -> float | int:
         raise NotImplementedError
 
     def start(self) -> None:
-        if self.thread.is_alive():
-            logger.warning(f"[{self.name}] Sensor is already running.")
+        if self._thread.is_alive():
+            logger.warning("Sensor is already running.")
             return
 
         self._stop_event.clear()
         self._pause_event.set()
 
-        self.thread = Thread(
+        self._thread = Thread(
             target=self._mock_local_simulation,
-            name=f"{self.type}_{self.name}_thread",
+            name=self._thread_name,
             daemon=True,
         )
         
-        self.thread.start()
-        logger.info(f"[{self.name}] Sensor started.")
+        self._thread.start()
+        logger.info("Sensor started.")
 
     def stop(self) -> None:
         self._stop_event.set()
 
         self._pause_event.set()
-        if self.thread.is_alive():
-            logger.info(f"[{self.name}] Stopping...")
-            self.thread.join(timeout=1.0)
+        if self._thread.is_alive():
+            logger.debug("Stopping...")
+            self._thread.join(timeout=1.0)
 
-            self.client.loop_stop()
-            self.client.disconnect()
+            self._client.loop_stop()
+            self._client.disconnect()
+            logger.info("Sensor stopped.")
 
     def pause(self) -> None:
-        logger.info(f"[{self.name}] Pausing...")
+        logger.debug("Pausing...")
         self._pause_event.clear()
+        logger.info("Sensor paused.")
 
     def resume(self) -> None:
-        logger.info(f"[{self.name}] Resuming...")
+        logger.debug("Resuming...")
         self._pause_event.set()
+        logger.info("Sensor resumed.")
 
     def _simulation_loop(self) -> None:
         try:
-            self.client.connect(self.mqtt_host, self.mqtt_port, 60)
-            self.client.loop_start()
-            logger.info(f"[{self.name}] Connected to MQTT and started simulation.")
+            logger.debug("Connecting to MQTT broker at %s:%s", self._mqtt_host, self._mqtt_port)
+            self._client.connect(self._mqtt_host, self._mqtt_port, 60)
+            self._client.loop_start()
+            logger.info("Connected to MQTT and started simulation.")
 
             while not self._stop_event.is_set():
                 is_resumed = self._pause_event.wait(timeout=1.0)
 
                 if not is_resumed:
+                    logger.debug("Simulation loop is paused.")
                     continue
 
                 value = self._generate_value()
-                logger.info(f"[{self.name}] Publishing value: {value} to topic: {self.topic}")
+                logger.debug("Publishing value: %s to topic: %s", value, self.topic)
 
-                self.client.publish(self.topic, value)
+                self._client.publish(self.topic, value)
 
-                self._stop_event.wait(self.interval)
+                self._stop_event.wait(self._interval)
 
         except Exception as e:
-            logger.info(f"[{self.name}] Error in simulation loop: {e}")
+            logger.warning("Error occured in simulation loop: %s", e)
 
     def _mock_local_simulation(self) -> None:
         try:
@@ -122,9 +128,9 @@ class Sensor(ABC):
                     continue
 
                 value = self._generate_value()
-                logger.info(f"[{self.name}] Generated value: {value}")
+                logger.debug("Generated value %s", value)
 
-                self._stop_event.wait(self.interval)
+                self._stop_event.wait(self._interval)
 
         except Exception as e:
-            logger.info(f"[{self.name}] Error in simulation loop: {e}")
+            logger.warning("Error occured in simulation loop: %s", e)
