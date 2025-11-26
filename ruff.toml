@@ -37,7 +37,8 @@ ignore = [
     "BLE001",
     "S311",
     "ERA001",
-    "G004"
+    "G004",
+    "T201",
 ]
 
 [lint.per-file-ignores]

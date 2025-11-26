@@ -20,8 +20,8 @@ DEFAULT_TIMEZONE: datetime.tzinfo = datetime.UTC
 
 load_dotenv(ROOT_PROJECT_PATH / ".env")
 
-MQTT_BROKER_HOST: str | None = str(os.getenv("MQTT_BROKER_HOST"))
-MQTT_BROKER_PORT: str | None = str(os.getenv("MQTT_BROKER_PORT"))
+MQTT_BROKER_HOST: str | None = os.getenv("MQTT_BROKER_HOST")
+MQTT_BROKER_PORT: str | None = os.getenv("MQTT_BROKER_PORT")
 
 INSTANCES_PER_DEVICE_TYPE: int = 4
 
@@ -48,4 +48,4 @@ TEMPERATURE_MESSAGES_PER_MIN: int = 6
 
 ENERGY_SENSOR_TYPE: str = "energy_consumption"
 ENERGY_VALUES_RANGE: tuple[float, float] = (3.0, 22.0)
-ENERGY_MESSAGES_PER_MIN: int = 60
+ENERGY_MESSAGES_PER_MIN: int = 8
