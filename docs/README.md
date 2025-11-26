@@ -104,7 +104,7 @@ docker attach sensors
 
 and then using the internal CLI, run the sensor simulation:
 
-```bash
+```
 iot-parking> start
 ```
 
