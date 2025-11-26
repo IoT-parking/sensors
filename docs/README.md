@@ -62,6 +62,24 @@ For development dependencies:
 uv add --dev <package-name>
 ```
 
+## Internal CLI
+
+App provides internal CLI as stated in requirements:
+
+```
+--- IoT-parking Sensor Simulation ---
+MQTT Broker Hostname: mosquitto:1883
+Number of sensor instances per type: 4
+-------------------------------------
+Available Commands:
+  start       - Start the sensor simulation (Blocking)
+  healthcheck - Check connectivity to MQTT Broker
+  help        - Show this menu
+  exit        - Quit the application
+  
+iot-parking> 
+```
+
 ## Running
 
 ### 1. Mock mode
@@ -90,23 +108,7 @@ and then using the internal CLI, run the sensor simulation:
 iot-parking> start
 ```
 
-### Internal CLI
 
-App provides internal CLI as stated in requirements:
-
-```
---- IoT-parking Sensor Simulation ---
-MQTT Broker Hostname: mosquitto:1883
-Number of sensor instances per type: 4
--------------------------------------
-Available Commands:
-  start       - Start the sensor simulation (Blocking)
-  healthcheck - Check connectivity to MQTT Broker
-  help        - Show this menu
-  exit        - Quit the application
-  
-iot-parking> 
-```
 
 
 
