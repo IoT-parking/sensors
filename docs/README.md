@@ -74,6 +74,7 @@ Number of sensor instances per type: 4
 Available Commands:
   start       - Start the sensor simulation (Blocking)
   healthcheck - Check connectivity to MQTT Broker
+  fire        - Publish a value to a specific sensor 
   help        - Show this menu
   exit        - Quit the application
   
