@@ -2,8 +2,8 @@ from logging import Logger
 
 from constants import INSTANCES_PER_DEVICE_TYPE, MQTT_BROKER_HOST, MQTT_BROKER_PORT
 from logger import get_logger
+from sensor import Sensor
 from utils.setup import (
-    generate_sensor_devices,
     is_broker_available,
     start_all_sensors_simulation,
 )
@@ -19,6 +19,7 @@ def cli_info_handler() -> None:
     print("Available Commands:")
     print("  start       - Start the sensor simulation (Blocking)")
     print("  healthcheck - Check connectivity to MQTT Broker")
+    print("  fire        - Publish a value to a specific sensor")
     print("  help        - Show this menu")
     print("  exit        - Quit the application")
     print(" ")
@@ -52,16 +53,12 @@ def perform_healthcheck(*, mock_mode: bool) -> bool:
     return False
 
 
-def start_simulation(*, mock_mode: bool) -> None:
-    logger.info("Initializing Sensors...")
-
+def start_simulation(*, mock_mode: bool, sensors: list[Sensor]) -> None:
     if mock_mode:
         logger.warning("Mock mode enabled: Skipping healthcheck.")
     elif not perform_healthcheck(mock_mode=mock_mode):
         logger.info("Please check if your Docker container 'mosquitto' is running")
         return
-
-    sensors = generate_sensor_devices()
 
     if not sensors:
         logger.error("No sensors generated. Check INSTANCES_PER_DEVICE_TYPE")
