@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from threading import Event, Thread
 from typing import TYPE_CHECKING
+import time
 
 import paho.mqtt.client as mqtt
 
@@ -29,7 +30,7 @@ class Sensor(ABC):
         messages_per_min: int,
     ) -> None:
         if MQTT_BROKER_HOST is None or MQTT_BROKER_PORT is None:
-            msg = "MQTT host and port must be provided as environment variables."
+            msg = "MQTT_BROKER_HOST and MQTT_BROKER_PORT must be set as environment variables"
             raise ValueError(msg)
 
         self.name: str = name
@@ -69,7 +70,23 @@ class Sensor(ABC):
     def _generate_value(self) -> float | int:
         raise NotImplementedError
 
-    def start(self) -> None:
+    def send_value(self, value: float) -> None:
+        self._client.publish(self.topic, value)
+        self.messages_sent += 1
+        logger.debug("Published value: %s to topic: %s", value, self.topic)
+
+    def fire_message(self, value: float) -> None:
+        if self._thread.is_alive():
+            self.send_value(value)
+        else:
+            self._client.connect(self._mqtt_host, self._mqtt_port, 60)
+            self._client.loop_start()
+            self.send_value(value)
+            time.sleep(0.5)
+            self._client.loop_stop()
+            self._client.disconnect()
+
+    def start(self, *, mock_mode: bool = False) -> None:
         if self._thread.is_alive():
             logger.warning("Sensor is already running.")
             return
@@ -78,8 +95,12 @@ class Sensor(ABC):
         self._stop_event.clear()
         self._pause_event.set()
 
+        target_method = (
+            self._mock_local_simulation if mock_mode else self._simulation_loop
+        )
+
         self._thread = Thread(
-            target=self._simulation_loop,
+            target=target_method,
             name=self._thread_name,
             daemon=True,
         )

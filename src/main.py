@@ -1,51 +1,81 @@
+import argparse
 import sys
 from logging import Logger
+from typing import TYPE_CHECKING
 
-from constants import MQTT_BROKER_HOST, MQTT_BROKER_PORT
 from logger import get_logger
-from utils.setup import (
-    generate_sensor_devices,
-    is_broker_available,
-    start_all_sensors_simulation,
+from utils.cli import (
+    cli_info_handler,
+    perform_healthcheck,
+    start_simulation,
 )
+from utils.setup import generate_sensor_devices
+
+if TYPE_CHECKING:
+    from sensor import Sensor
 
 logger: Logger = get_logger()
 
 
-def main():
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mock", action="store_true", help="Enable mock mode")
+    args = parser.parse_args()
+
+    cli_info_handler()
+    if args.mock:
+        print("NOTE: Application running in MOCK MODE")
+
     logger.info("Initializing Sensors...")
+    sensors: list[Sensor] = generate_sensor_devices()
+    logger.info("%d Sensors initialized successfully.", len(sensors))
 
-    if not is_broker_available(MQTT_BROKER_HOST, int(MQTT_BROKER_PORT)):
-        logger.critical(
-            "Critical Error: Unable to reach MQTT Broker at %s:%s.",
-            MQTT_BROKER_HOST,
-            MQTT_BROKER_PORT,
-        )
-        logger.info("Please check if your Docker container 'mosquitto' is running")
-        sys.exit(1)
+    while True:
+        try:
+            command = input("iot-parking> ").strip().lower()
 
-    sensors = generate_sensor_devices()
+            if command == "start":
+                start_simulation(sensors=sensors, mock_mode=args.mock)
+            elif command == "healthcheck":
+                perform_healthcheck(mock_mode=args.mock)
+            elif command == "fire":
+                print("-" * 30, "\nAvailable Sensors:", "-" * 30)
+                for sensor in sensors:
+                    print(f"[sensor] {sensor.name}")
+                print("-" * 60)
+                sensor_name = input("Enter sensor name: ").strip()
+                value_str = input("Enter value to publish: ").strip()
+                try:
+                    value = float(value_str)
+                except ValueError:
+                    print("Invalid value. Please enter a numeric value.")
+                    continue
 
-    if not sensors:
-        logger.error("No sensors generated. Check INSTANCES_PER_DEVICE_TYPE")
-        sys.exit(1)
+                matched_sensors = [s for s in sensors if s.name == sensor_name]
+                if not matched_sensors:
+                    print(f"No sensor found with name '{sensor_name}'.")
+                    continue
 
-    try:
-        start_all_sensors_simulation(sensors)
-    except Exception:
-        logger.exception("Failed to start sensor simulations")
-        sys.exit(1)
+                sel_sensor = matched_sensors[0]
+                from utils.setup import fire_single_message
 
-    logger.info("Started %d sensors", len(sensors))
+                try:
+                    fire_single_message(sel_sensor, value)
+                    print(f"Published value {value} to sensor '{sensor_name}'.")
+                except Exception as e:
+                    print(f"Failed to fire message: {e}")
+            elif command == "help":
+                cli_info_handler()
+            elif command == "exit":
+                logger.info("Exiting application.")
+                sys.exit(0)
+            elif command == "":
+                continue
+            else:
+                print(f"Unknown command: '{command}'. Type 'help' for options.")
 
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        logger.info("\nStopping all sensors...")
-        for sensor in sensors:
-            sensor.stop()
-        logger.info("Stopped")
+        except KeyboardInterrupt:
+            print("\nUse 'exit' to quit.")
 
 
 if __name__ == "__main__":

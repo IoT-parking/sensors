@@ -33,9 +33,11 @@ def generate_sensor_devices() -> list[Sensor]:
     return sensors
 
 
-def start_all_sensors_simulation(sensors: list[Sensor]) -> None:
+def start_all_sensors_simulation(
+    sensors: list[Sensor], *, mock_mode: bool = False
+) -> None:
     for sensor in sensors:
-        sensor.start()
+        sensor.start(mock_mode=mock_mode)
 
 
 def is_broker_available(host: str, port: int, timeout: int = 3) -> bool:
@@ -44,3 +46,7 @@ def is_broker_available(host: str, port: int, timeout: int = 3) -> bool:
             return True
     except (socket.timeout, ConnectionRefusedError, OSError):
         return False
+
+
+def fire_single_message(sensor: Sensor, value: float) -> None:
+    sensor.fire_message(value)
