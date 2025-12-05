@@ -39,8 +39,10 @@ def main() -> None:
             elif command == "healthcheck":
                 perform_healthcheck(mock_mode=args.mock)
             elif command == "fire":
+                print("-" * 30, "\nAvailable Sensors:", "-" * 30)
                 for sensor in sensors:
-                    print(f"{sensor.name}")
+                    print(f"[sensor] {sensor.name}")
+                print("-" * 60)
                 sensor_name = input("Enter sensor name: ").strip()
                 value_str = input("Enter value to publish: ").strip()
                 try:
