@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from threading import Event, Thread
 from typing import TYPE_CHECKING
+import time
 
 import paho.mqtt.client as mqtt
 
@@ -68,6 +69,22 @@ class Sensor(ABC):
     @abstractmethod
     def _generate_value(self) -> float | int:
         raise NotImplementedError
+
+    def send_value(self, value: float) -> None:
+        self._client.publish(self.topic, value)
+        self.messages_sent += 1
+        logger.debug("Published value: %s to topic: %s", value, self.topic)
+
+    def fire_message(self, value: float) -> None:
+        if self._thread.is_alive():
+            self.send_value(value)
+        else:
+            self._client.connect(self._mqtt_host, self._mqtt_port, 60)
+            self._client.loop_start()
+            self.send_value(value)
+            time.sleep(0.5)
+            self._client.loop_stop()
+            self._client.disconnect()
 
     def start(self, *, mock_mode: bool = False) -> None:
         if self._thread.is_alive():

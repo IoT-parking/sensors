@@ -39,6 +39,8 @@ def main() -> None:
             elif command == "healthcheck":
                 perform_healthcheck(mock_mode=args.mock)
             elif command == "fire":
+                for sensor in sensors:
+                    print(f"{sensor.name}")
                 sensor_name = input("Enter sensor name: ").strip()
                 value_str = input("Enter value to publish: ").strip()
                 try:
@@ -52,11 +54,14 @@ def main() -> None:
                     print(f"No sensor found with name '{sensor_name}'.")
                     continue
 
-                sensor = matched_sensors[0]
+                sel_sensor = matched_sensors[0]
                 from utils.setup import fire_single_message
 
-                fire_single_message(sensor, value)
-                print(f"Published value {value} to sensor '{sensor_name}'.")
+                try:
+                    fire_single_message(sel_sensor, value)
+                    print(f"Published value {value} to sensor '{sensor_name}'.")
+                except Exception as e:
+                    print(f"Failed to fire message: {e}")
             elif command == "help":
                 cli_info_handler()
             elif command == "exit":

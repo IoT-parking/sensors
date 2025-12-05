@@ -49,4 +49,4 @@ def is_broker_available(host: str, port: int, timeout: int = 3) -> bool:
 
 
 def fire_single_message(sensor: Sensor, value: float) -> None:
-    sensor._client.publish(sensor.topic, value)
+    sensor.fire_message(value)
